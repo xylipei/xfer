@@ -20,5 +20,5 @@
       "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/xfer.cmd"
     }
   },
-  "notes": "Windows support: install.ps1 (checksum-verified, versioned, PATH registration, rollback), xfer.cmd shim, Node>=20 guard, firewall hint, no bogus .local URL on Windows."
+  "notes": ""
 }
