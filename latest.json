@@ -12,5 +12,5 @@
       "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/install.sh"
     }
   },
-  "notes": "First public release: LAN transfer with secure defaults, phone/tablet web page with short code and QR, reverse upload, protocol versioning, versioned install with rollback."
+  "notes": ""
 }
