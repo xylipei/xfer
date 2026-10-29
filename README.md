@@ -22,11 +22,8 @@ sh /tmp/xfer-install.sh --version 0.3.1 \
   --sha256 0033fa876a99aac71989c270102dd88c74f821aa975cc2c26541c106569f50ee
 ```
 
-installer 会再下载 `xfer.mjs` 并核对 release 里的 `SHA256SUMS`：
-
-```
-510cc07cadafb813ee3b7e99c570c02fda03ccfff11d908b3bded4c070e5cfd4  xfer.mjs
-```
+`--sha256` 就是 `xfer.mjs` 的摘要，installer 下载后逐字节核对，不匹配**不会落盘**；
+同一份摘要在 release 的 `SHA256SUMS` 里也能查到。
 
 检查更新 / 回滚：
 
@@ -45,6 +42,11 @@ Windows 没有 shebang，文件是否可执行取决于扩展名；因此这里�
 
 - `install.ps1`：一条命令装好（校验、版本并存、生成 shim、写 PATH、可回滚）
 - `xfer.cmd`：手动安装时用的入口壳，直接调用 `xfer.mjs`
+
+> 注意：jsDelivr 对 `.cmd` 返回 403（CDN 屏蔽可执行扩展名）。`install.ps1` 会**自己生成** shim，
+> 所以正常安装不受影响；只有手动下载时才需要从 release 取：
+> `https://github.com/xylipei/xfer/releases/download/v0.3.1/xfer.cmd`
+> （或用 `raw.githubusercontent.com`，但这条链路在国内时通时断）。
 
 ```powershell
 irm https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.ps1 -OutFile $env:TEMP\xfer-install.ps1
