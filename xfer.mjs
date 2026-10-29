@@ -531,7 +531,9 @@ async function send(rawArgv) {
           res.writeHead(413, { 'content-type': 'application/json', connection: 'close' });
           res.end(JSON.stringify({ error: `larger than ${values['max-upload']} MB` }));
           out({ event: 'denied', ip, reason: 'upload-size', bytes });
-          req.destroy();
+          // destroy only after the reply is flushed, otherwise the client can see
+          // a reset instead of the 413 (observed on a Linux runner)
+          res.on('finish', () => req.destroy());
         }
       });
       try {

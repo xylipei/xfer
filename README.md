@@ -25,7 +25,7 @@ sh /tmp/xfer-install.sh --version 0.3.1 \
 installer 会再下载 `xfer.mjs` 并核对 release 里的 `SHA256SUMS`：
 
 ```
-4d8a004a5c125ea1230db0d28a42860e1c560ecab74a4e9dae022d8d8fc1667d  xfer.mjs
+510cc07cadafb813ee3b7e99c570c02fda03ccfff11d908b3bded4c070e5cfd4  xfer.mjs
 ```
 
 检查更新 / 回滚：

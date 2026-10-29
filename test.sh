@@ -12,7 +12,7 @@ sha256() { if command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | cut -
 
 PASS=0; FAIL=0
 ok()   { PASS=$((PASS+1)); printf '  ok   %s\n' "$1"; }
-bad()  { FAIL=$((FAIL+1)); printf '  FAIL %s\n' "$1"; }
+bad()  { FAIL=$((FAIL+1)); printf '  FAIL %s\n' "$1"; printf '::error title=xfer-test::%s\n' "$1" >&2; }
 check(){ if [ "$2" = "$3" ]; then ok "$1 ($3)"; else bad "$1 (want $3, got $2)"; fi; }
 
 head -c 3145728 /dev/urandom > "$SRC/payload.bin"
@@ -188,7 +188,7 @@ grep -q -- '-Rollback' "$ROOT/install.ps1"; check "ps installer supports rollbac
 if command -v file >/dev/null 2>&1; then
   file "$ROOT/xfer.cmd" | grep -q CRLF; check "xfer.cmd uses CRLF" "$?" "0"
 fi
-grep -q '\*.cmd text eol=crlf' "$ROOT/.gitattributes"; check "gitattributes pins CRLF for .cmd" "$?" "0"
+grep -q '^\*\.cmd -text' "$ROOT/.gitattributes"; check "gitattributes keeps .cmd bytes intact" "$?" "0"
 node "$XFER" -V | grep -q '"version":"0.3.1"'; check "version bumped" "$?" "0"
 
 # --------------------------------------------------------------- report -----
