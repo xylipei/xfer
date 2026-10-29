@@ -1,0 +1,77 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: test
+        run: |
+          chmod +x test.sh install.sh
+          ./test.sh
+
+      - name: checksums
+        run: |
+          sha256sum xfer.mjs install.sh > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: manifest
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          REPO="${GITHUB_REPOSITORY}"
+          export VERSION REPO
+          node --input-type=module -e '
+            import { readFileSync, writeFileSync } from "node:fs";
+            const sums = Object.fromEntries(
+              readFileSync("SHA256SUMS", "utf8").trim().split("\n")
+                .map((l) => l.trim().split(/\s+/).reverse()),
+            );
+            const base = `https://cdn.jsdelivr.net/gh/${process.env.REPO}@v${process.env.VERSION}`;
+            const manifest = {
+              version: process.env.VERSION,
+              proto: Number((readFileSync("xfer.mjs", "utf8").match(/const PROTO = (\d+)/) ?? [])[1]),
+              released: new Date().toISOString().slice(0, 10),
+              assets: Object.fromEntries(
+                Object.entries(sums).map(([name, sha256]) => [name, { sha256, url: `${base}/${name}` }]),
+              ),
+              notes: process.env.RELEASE_NOTES ?? "",
+            };
+            writeFileSync("latest.json", JSON.stringify(manifest, null, 2) + "\n");
+            console.log(JSON.stringify(manifest, null, 2));
+          '
+
+      - name: release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            xfer.mjs
+            install.sh
+            SHA256SUMS
+            latest.json
+          generate_release_notes: true
+
+      - name: publish manifest to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp latest.json /tmp/latest.json
+          git fetch origin main
+          git checkout -B main origin/main
+          cp /tmp/latest.json latest.json
+          git add latest.json
+          git diff --cached --quiet || git commit -m "chore(latest): ${GITHUB_REF_NAME}"
+          git push origin main

@@ -1,0 +1,9 @@
+{
+  "name": "xfer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agent-first LAN file transfer: one JSON line per event, token-gated, resumable, checksum-verified.",
+  "bin": { "xfer": "./xfer.mjs" },
+  "engines": { "node": ">=20" }
+}

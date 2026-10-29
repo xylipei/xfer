@@ -1,0 +1,16 @@
+{
+  "version": "0.3.0",
+  "proto": 1,
+  "released": "2026-10-29",
+  "assets": {
+    "xfer.mjs": {
+      "sha256": "b2ab86e28757c7d167dfe37dde5ff82c15c4953a58728a854434ff0ff1c23d9b",
+      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/xfer.mjs"
+    },
+    "install.sh": {
+      "sha256": "0033fa876a99aac71989c270102dd88c74f821aa975cc2c26541c106569f50ee",
+      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/install.sh"
+    }
+  },
+  "notes": "First public release: LAN transfer with secure defaults, phone/tablet web page with short code and QR, reverse upload, protocol versioning, versioned install with rollback."
+}
