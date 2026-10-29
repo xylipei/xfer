@@ -1,16 +1,20 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.1",
   "proto": 1,
   "released": "2026-10-29",
   "assets": {
     "xfer.mjs": {
-      "sha256": "b2ab86e28757c7d167dfe37dde5ff82c15c4953a58728a854434ff0ff1c23d9b",
-      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/xfer.mjs"
+      "sha256": "4d8a004a5c125ea1230db0d28a42860e1c560ecab74a4e9dae022d8d8fc1667d",
+      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/xfer.mjs"
     },
     "install.sh": {
       "sha256": "0033fa876a99aac71989c270102dd88c74f821aa975cc2c26541c106569f50ee",
-      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/install.sh"
+      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.sh"
+    },
+    "install.ps1": {
+      "sha256": "21915addc90cf8be57e166c34e6aee0c6e444b1b36917f6a4e0dffb31a8c00fe",
+      "url": "https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.ps1"
     }
   },
-  "notes": ""
+  "notes": "Windows support: install.ps1 (checksum-verified, versioned, PATH registration, rollback), xfer.cmd shim, Node>=20 guard, firewall hint, no bogus .local URL on Windows."
 }

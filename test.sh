@@ -178,6 +178,19 @@ HOME="$TMP/home" sh "$ROOT/install.sh" --version 0.3.1 --base "file://$ROOT" >/d
 HOME="$TMP/home" sh "$ROOT/install.sh" --rollback >/dev/null 2>&1
 check "rollback restores previous" "$(cat "$TMP/home/.local/xfer/current")" "0.3.0"
 
+# ------------------------------------------------------------------ windows --
+echo "windows packaging"
+[ -f "$ROOT/install.ps1" ]; check "install.ps1 present" "$?" "0"
+grep -q 'Get-FileHash' "$ROOT/install.ps1"; check "ps installer verifies checksums" "$?" "0"
+grep -q 'xfer.cmd' "$ROOT/install.ps1"; check "ps installer writes the shim" "$?" "0"
+grep -q -- '-Rollback' "$ROOT/install.ps1"; check "ps installer supports rollback" "$?" "0"
+[ -f "$ROOT/xfer.cmd" ]; check "xfer.cmd shipped for manual installs" "$?" "0"
+if command -v file >/dev/null 2>&1; then
+  file "$ROOT/xfer.cmd" | grep -q CRLF; check "xfer.cmd uses CRLF" "$?" "0"
+fi
+grep -q '\*.cmd text eol=crlf' "$ROOT/.gitattributes"; check "gitattributes pins CRLF for .cmd" "$?" "0"
+node "$XFER" -V | grep -q '"version":"0.3.1"'; check "version bumped" "$?" "0"
+
 # --------------------------------------------------------------- report -----
 rm -rf "$TMP"
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"

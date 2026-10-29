@@ -26,7 +26,7 @@ jobs:
 
       - name: checksums
         run: |
-          sha256sum xfer.mjs install.sh > SHA256SUMS
+          sha256sum xfer.mjs install.sh install.ps1 xfer.cmd > SHA256SUMS
           cat SHA256SUMS
 
       - name: manifest
@@ -60,6 +60,8 @@ jobs:
           files: |
             xfer.mjs
             install.sh
+            install.ps1
+            xfer.cmd
             SHA256SUMS
             latest.json
           generate_release_notes: true

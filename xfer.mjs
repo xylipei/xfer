@@ -17,7 +17,7 @@ import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-const VERSION = '0.3.0';
+const VERSION = '0.3.1';
 // Wire protocol. Bump ONLY when a change breaks an older peer (route, auth
 // param, JSON shape). App version may move freely while proto stays put.
 const PROTO = 1;
@@ -25,6 +25,19 @@ const PROTO = 1;
 // ------------------------------------------------------------------ io ------
 
 const out = (obj) => process.stdout.write(JSON.stringify(obj) + '\n');
+
+// Fail with a readable line instead of a SyntaxError on an ancient runtime.
+{
+  const major = Number(process.versions.node.split('.')[0]);
+  if (major < 20) {
+    out({
+      event: 'error',
+      message: `Node ${process.versions.node} is too old; xfer needs 20 or newer`,
+      hint: 'https://nodejs.org/en/download',
+    });
+    process.exit(1);
+  }
+}
 
 function die(message, code = 1, extra = {}) {
   out({ event: 'error', message, ...extra });
@@ -643,7 +656,9 @@ async function send(rawArgv) {
     const scheme = secure ? 'https' : 'http';
     const hosts = isLoopback(bind) ? ['127.0.0.1'] : lanAddresses();
     const bases = hosts.map((h) => `${scheme}://${h}:${port}/`);
-    const mdns = `${scheme}://${hostname().replace(/\.local$/, '')}.local:${port}/`;
+    const mdns = process.platform === 'win32'
+      ? null
+      : `${scheme}://${hostname().replace(/\.local$/, '')}.local:${port}/`;
     const ready = {
       event: 'ready',
       version: VERSION,
@@ -665,7 +680,8 @@ async function send(rawArgv) {
       // what a phone should open: short code, no 32-char token to type
       phoneUrl: `${bases[0] ?? ''}?k=${code}`,
       phoneUrls: bases.map((b) => `${b}?k=${code}`),
-      mdnsUrl: `${mdns}?k=${code}`,
+      mdnsUrl: mdns ? `${mdns}?k=${code}` : null,
+      mdnsNote: mdns ? undefined : 'Windows has no mDNS by default; use the IP URLs',
       hint: 'phones/tablets: open phoneUrl (or scan --qr); computers: xfer recv with baseUrls',
     };
     if (!isLoopback(bind)) {
@@ -673,6 +689,13 @@ async function send(rawArgv) {
     }
     if (!secure && !isLoopback(bind)) {
       out({ event: 'warn', message: 'plain HTTP over the LAN; use --tls-cert or an SSH tunnel for sensitive data' });
+    }
+    if (process.platform === 'win32' && !isLoopback(bind)) {
+      out({
+        event: 'warn',
+        message: 'Windows Firewall may block inbound connections; allow "private networks" when prompted',
+        hint: `netsh advfirewall firewall add rule name="xfer ${port}" dir=in action=allow protocol=TCP localport=${port}  (administrator)`,
+      });
     }
     if (uploadDir) out({ event: 'warn', message: `upload enabled: files land in ${uploadDir}` });
     out(ready);
@@ -836,6 +859,7 @@ async function doctor() {
     platform: process.platform,
     arch: process.arch,
     installPath: self,
+    shim: process.platform === 'win32' ? 'xfer.cmd' : 'xfer',
     installBytes: st?.size ?? null,
     onPath,
     onPathMatches: onPath ? (await fs.realpath(onPath).catch(() => onPath)) === (await fs.realpath(self).catch(() => self)) : false,

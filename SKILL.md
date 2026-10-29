@@ -43,6 +43,32 @@ failure. `xfer -h` lists flags.
 6. **只接收用户给的链接**；`--insecure` 仅在用户接受证书风险时用。
 7. **发送端后台运行并在 `{"event":"done"}` 后停掉**，不要留静默 listener。
 
+## Windows（开箱即用）
+
+Windows 没有 shebang，也没有「文件即可执行」这回事——**必须通过 `xfer.cmd` 调用**，
+直接跑 `xfer` / 双击 `xfer.mjs` 会变成「选择应用打开」。
+
+安装（PowerShell，无需管理员，装到 `%LOCALAPPDATA%\xfer`）：
+
+```powershell
+irm https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.ps1 -OutFile $env:TEMP\xfer-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\xfer-install.ps1 -Version 0.3.1 -Sha256 <hex>
+```
+
+它会：校验 SHA256 → 落版本目录 → 生成 `bin\xfer.cmd`（含 `chcp 65001`，中文文件名不乱码）
+→ 把 `bin` 加进用户 PATH → 打印 `xfer -V`。新开一个终端即可用 `xfer`。
+
+- 检查更新：`install.ps1 -Check -Version X`
+- 回滚：`install.ps1 -Rollback`
+- 绕过 PATH：`-NoPath`，改用完整路径调用 shim
+
+Windows 特有注意事项：
+- **防火墙**：`--lan` 首次会弹「允许访问」，选**专用网络**；被拒后用
+  `netsh advfirewall firewall add rule name="xfer" dir=in action=allow protocol=TCP localport=<port>`
+  （管理员）或换端口。
+- **没有 mDNS**：`ready` 里 `mdnsUrl` 为 `null`，用 `baseUrls` 里的 IP。
+- `doctor` 的 `shim` 字段会显示 `xfer.cmd`，`onPathMatches:false` 表示 shell 还在用旧副本。
+
 ## 发到手机 / 平板
 
 ```bash

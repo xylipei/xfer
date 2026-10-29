@@ -17,27 +17,63 @@ xfer recv -h / info -h
 
 ```bash
 curl -fsSLo /tmp/xfer-install.sh \
-  https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.0/install.sh
-sh /tmp/xfer-install.sh --version 0.3.0 \
+  https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.sh
+sh /tmp/xfer-install.sh --version 0.3.1 \
   --sha256 0033fa876a99aac71989c270102dd88c74f821aa975cc2c26541c106569f50ee
 ```
 
 installer 会再下载 `xfer.mjs` 并核对 release 里的 `SHA256SUMS`：
 
 ```
-b2ab86e28757c7d167dfe37dde5ff82c15c4953a58728a854434ff0ff1c23d9b  xfer.mjs
+4d8a004a5c125ea1230db0d28a42860e1c560ecab74a4e9dae022d8d8fc1667d  xfer.mjs
 ```
 
 检查更新 / 回滚：
 
 ```bash
-sh /tmp/xfer-install.sh --check --version 0.3.1   # 退出码 0=已最新 1=该升级
+sh /tmp/xfer-install.sh --check --version 0.3.2   # 退出码 0=已最新 1=该升级
 sh /tmp/xfer-install.sh --rollback                 # 退回上一版
 xfer doctor                                        # 版本 / proto / 装在哪 / 是否被 PATH 遮蔽
 ```
 
 给 agent 用：把 `SKILL.md` 放进 skills 目录（DSH: `~/.dsh/skills/xfer-transfer/SKILL.md`），
 它会自己判断「装/升级/直接用」，并按协议版本拒绝混版传输。
+
+## Windows：开箱即用
+
+Windows 没有 shebang，文件是否可执行取决于扩展名；因此这里额外提供两样东西：
+
+- `install.ps1`：一条命令装好（校验、版本并存、生成 shim、写 PATH、可回滚）
+- `xfer.cmd`：手动安装时用的入口壳，直接调用 `xfer.mjs`
+
+```powershell
+irm https://cdn.jsdelivr.net/gh/xylipei/xfer@v0.3.1/install.ps1 -OutFile $env:TEMP\xfer-install.ps1
+powershell -ExecutionPolicy Bypass -File $env:TEMP\xfer-install.ps1 `
+  -Version 0.3.1 -Sha256 <xfer.mjs 的 sha256>
+```
+
+装完之后**新开一个终端**，`xfer -V` 就能用。装到 `%LOCALAPPDATA%\xfer`，不需要管理员：
+
+```
+%LOCALAPPDATA%\xfer\versions\xfer-0.3.1.mjs   # 历史版本，回滚用
+%LOCALAPPDATA%\xfer\current.mjs                # 当前生效
+%LOCALAPPDATA%\xfer\bin\xfer.cmd              # PATH 里的入口（chcp 65001，中文名不乱码）
+```
+
+已经装过的机器升级：
+
+```powershell
+xfer doctor                                     # 看清 installPath / onPathMatches
+powershell -ExecutionPolicy Bypass -File $env:TEMP\xfer-install.ps1 -Check -Version 0.3.1   # 0=最新 1=该升
+```
+
+Windows 上三个已知差异：
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| 双击 `xfer` 弹「选择应用」 | 无扩展名文件没有可执行语义 | 用 `xfer.cmd`（或 `node xfer.mjs`），这就是 shim 存在的理由 |
+| 手机连不上 | 防火墙拦截入站 | 弹窗时允许「专用网络」；或 `netsh advfirewall ... localport=<port>` |
+| `*.local` 打不开 | Windows 默认无 mDNS | `mdnsUrl` 直接为 `null`，用 `baseUrls` 里的 IP |
 
 ## 设备兼容矩阵
 
